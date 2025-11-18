@@ -1,9 +1,5 @@
 .root {
     -fx-background-image: url("background_image.png");
-    -fx-background-repeat: repeat;
-    /* ONE tile of the image = ONE brick block */
-    -fx-background-size: 510 510; /* use the same value as BRICK_SIZE */
-    -fx-background-position: -5.3 0;
 }
 
 .nextBrick {
