@@ -242,8 +242,7 @@ public class GuiController implements Initializable {
     public void setEventListener(InputEventListener eventListener) {
         this.eventListener = eventListener;
     }
-
-    // NEW: Binding implementation
+    
     public void bindScore(IntegerProperty integerProperty) {
         // Bind the text property of the score label to the IntegerProperty, auto-converting to string.
         if (scoreLabel != null) {
