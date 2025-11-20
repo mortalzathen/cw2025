@@ -12,6 +12,15 @@
     -fx-border-color: linear-gradient(#2A5058, #61a2b1);
     -fx-border-width: 12px;
     -fx-border-radius: 12px;
+
+    -fx-background-color: black;
+    -fx-background-radius: 20px;
+    -fx-background-width: 10px;
+
+    -fx-grid-lines-radius: 12px;
+    -fx-grid-lines-width: 12px;
+
+
 }
 
 .nextBrickLabel {
