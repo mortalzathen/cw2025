@@ -19,7 +19,7 @@
 
     <GridPane fx:id="brickPanel" vgap="1" hgap="1" layoutY="30" layoutX="40"/>
 
-    <VBox layoutX="265.0" layoutY="100.0" alignment="TOP_CENTER" spacing="40" styleClass="vbox">
+        <VBox layoutX="265.0" layoutY="100.0" alignment="TOP_CENTER" spacing="40" styleClass="vbox">
 
         <Label text="SCORE" styleClass="nextBrickLabel"/>
         <Label fx:id="scoreLabel" text="0" styleClass="scoreClass"/>

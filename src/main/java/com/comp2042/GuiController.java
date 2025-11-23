@@ -20,10 +20,13 @@ import javafx.scene.paint.Paint;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
 import javafx.util.Duration;
+import javafx.stage.Stage;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 
 import java.net.URL;
 import java.util.ResourceBundle;
-import java.util.Arrays; // Required for the temporary bottomIndices logic
 
 public class GuiController implements Initializable {
 
@@ -103,6 +106,12 @@ public class GuiController implements Initializable {
                     } else {
                         pauseGame(null);
                     }
+                }
+
+                if (keyEvent.getCode() == KeyCode.ENTER && isGameOver.get() == Boolean.TRUE) {
+                    // CHANGE: Call the new safe transition method instead of Main.launch
+                    returnToMenu(null);
+                    keyEvent.consume();
                 }
             }
         });
@@ -351,6 +360,27 @@ public class GuiController implements Initializable {
         else {
             timeLine.play();
             isPause.setValue(Boolean.FALSE);
+        }
+    }
+
+    public void returnToMenu(ActionEvent actionEvent) {
+        try {
+            // Stop the current game loop
+            timeLine.stop();
+
+            Stage primaryStage = (Stage) gamePanel.getScene().getWindow();
+
+            URL location = getClass().getClassLoader().getResource("menuLayout.fxml");
+            FXMLLoader fxmlLoader = new FXMLLoader(location);
+            Parent root = fxmlLoader.load();
+
+            primaryStage.setScene(new Scene(root, 475, 500));
+            primaryStage.setTitle("TetrisJFX - Menu");
+
+            root.requestFocus();
+
+        } catch (Exception e) {
+            System.err.println("Error returning to menu: " + e.getMessage());
         }
     }
 }
