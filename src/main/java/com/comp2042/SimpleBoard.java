@@ -139,6 +139,11 @@ public class SimpleBoard implements Board {
         return new ViewData(brickRotator.getCurrentShape(), (int) currentOffset.getX(), (int) currentOffset.getY(), n1, n2, n3, getGhostYPosition());
     }
 
+    public void hardDropBrick() {
+        int ghostY = getGhostYPosition();
+        currentOffset.setLocation(currentOffset.getX(), (double) ghostY);
+    }
+
     @Override
     public void mergeBrickToBackground() {
         currentGameMatrix = MatrixOperations.merge(currentGameMatrix, brickRotator.getCurrentShape(), (int) currentOffset.getX(), (int) currentOffset.getY());

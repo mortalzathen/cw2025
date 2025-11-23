@@ -6,12 +6,20 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
+import javafx.fxml.FXML;
+import javafx.scene.control.TextField;
 
 import java.net.URL;
 
 public class MenuController {
+    @FXML
+    private TextField nameField;
 
     public void startGame(ActionEvent event) throws Exception {
+        String playerName = nameField.getText().trim();
+        if (playerName.isEmpty()) {
+            playerName = "Player";
+        }
 
         Stage primaryStage = (Stage) ((Parent) event.getSource()).getScene().getWindow();
 
@@ -21,8 +29,9 @@ public class MenuController {
 
         GuiController c = fxmlLoader.getController();
 
-        primaryStage.setScene(new Scene(root, 475, 500));
-        primaryStage.setTitle("TetrisJFX");
+        primaryStage.setScene(new Scene(root, 550, 600));
+        primaryStage.setTitle("TetrisJFX - " + playerName);
+
         new GameController(c);
     }
 

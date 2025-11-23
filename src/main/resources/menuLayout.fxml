@@ -4,6 +4,7 @@
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.layout.VBox?>
+<?import javafx.scene.control.TextField?>
 <?import java.net.URL?>
 
 <VBox alignment="CENTER" spacing="20" styleClass="rootStyle"
@@ -16,7 +17,11 @@
 
     <Label text="TETRIS JFX" styleClass="scoreClass"/>
 
-    <VBox spacing="10" alignment="CENTER" prefWidth="200">
+    <VBox spacing="10" alignment="CENTER" prefWidth="250">
+
+        <Label text="ENTER PLAYER NAME:" styleClass="nextBrickLabel"/>
+        <TextField fx:id="nameField" promptText="Your Name" styleClass="ipad-dark-grey"/>
+
         <Button text="START GAME" onAction="#startGame" maxWidth="Infinity" styleClass="ipad-dark-grey"/>
         <Button text="LEADERBOARD" onAction="#showLeaderboard" maxWidth="Infinity" styleClass="ipad-dark-grey"/>
         <Button text="EXIT" onAction="#exitGame" maxWidth="Infinity" styleClass="ipad-dark-grey"/>

@@ -20,10 +20,6 @@ import javafx.scene.paint.Paint;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
 import javafx.util.Duration;
-import javafx.stage.Stage;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
 
 import java.net.URL;
 import java.util.ResourceBundle;
@@ -37,7 +33,7 @@ public class GuiController implements Initializable {
     private GridPane gamePanel;
 
     @FXML
-    private Group groupNotification;
+    public Group groupNotification;
 
     @FXML
     private GridPane brickPanel;
@@ -56,7 +52,7 @@ public class GuiController implements Initializable {
     private GridPane nextPanel3;
 
     @FXML
-    private GridPane ghostPanel; // The dedicated pane
+    private GridPane ghostPanel;
 
     private Rectangle[][] ghostRectangles;
     private Rectangle[][] displayMatrix;
@@ -96,6 +92,10 @@ public class GuiController implements Initializable {
                         moveDown(new MoveEvent(EventType.DOWN, EventSource.USER));
                         keyEvent.consume();
                     }
+                    if (keyEvent.getCode() == KeyCode.SPACE) {
+                        eventListener.onHardDropEvent();
+                        keyEvent.consume();
+                    }
                 }
                 if (keyEvent.getCode() == KeyCode.N) {
                     newGame(null);
@@ -106,12 +106,6 @@ public class GuiController implements Initializable {
                     } else {
                         pauseGame(null);
                     }
-                }
-
-                if (keyEvent.getCode() == KeyCode.ENTER && isGameOver.get() == Boolean.TRUE) {
-                    // CHANGE: Call the new safe transition method instead of Main.launch
-                    returnToMenu(null);
-                    keyEvent.consume();
                 }
             }
         });
@@ -145,7 +139,6 @@ public class GuiController implements Initializable {
             }
         }
 
-        // Initialize the dedicated ghost rectangles array
         ghostRectangles = new Rectangle[4][4];
         for (int i = 0; i < 4; i++) {
             for (int j = 0; j < 4; j++) {
@@ -161,7 +154,6 @@ public class GuiController implements Initializable {
         brickPanel.setLayoutX(gamePanel.getLayoutX() + brick.getxPosition() * brickPanel.getVgap() + brick.getxPosition() * BRICK_SIZE);
         brickPanel.setLayoutY(-42 + gamePanel.getLayoutY() + brick.getyPosition() * brickPanel.getHgap() + brick.getyPosition() * BRICK_SIZE);
 
-        // GHOST PANEL: Set the base position to the EXACT same offset as brickPanel
         ghostPanel.setLayoutX(brickPanel.getLayoutX());
         ghostPanel.setLayoutY(brickPanel.getLayoutY());
 
@@ -209,17 +201,14 @@ public class GuiController implements Initializable {
         return returnPaint;
     }
 
-    // UPDATED: Method to return a solid Gray color for the ghost
     private Paint getGhostColor(int i) {
-        // Return a solid light gray color
-        return Color.LIGHTGRAY;
+        return Color.WHITE.deriveColor(0, 1, 1, 0.4);
     }
 
 
-    private void refreshBrick(ViewData brick) {
+    public void refreshBrick(ViewData brick) {
         if (isPause.getValue() == Boolean.FALSE) {
 
-            // --- GHOST LOGIC PRE-CALCULATION START ---
             int[] bottomIndices = new int[4];
             for (int k = 0; k < 4; k++) bottomIndices[k] = -1;
 
@@ -231,13 +220,14 @@ public class GuiController implements Initializable {
                     }
                 }
             }
+
             int ghostY = brick.getGhostYPosition();
             int deltaY = ghostY - brick.getyPosition();
             double vgap = brickPanel.getVgap();
             double yTranslateDistance = deltaY * (BRICK_SIZE + vgap);
 
             double calculatedX = gamePanel.getLayoutX() + brick.getxPosition() * brickPanel.getVgap() + brick.getxPosition() * BRICK_SIZE;
-            double calculatedY = -42 + gamePanel.getLayoutY() + brick.getyPosition() * brickPanel.getHgap() + brick.getyPosition() * BRICK_SIZE;
+            double calculatedY = -44 + gamePanel.getLayoutY() + brick.getyPosition() * brickPanel.getHgap() + brick.getyPosition() * BRICK_SIZE;
 
             brickPanel.setLayoutX(calculatedX);
             brickPanel.setLayoutY(calculatedY);
@@ -247,7 +237,7 @@ public class GuiController implements Initializable {
 
             for (int i = 0; i < 4; i++) {
                 for (int j = 0; j < 4; j++) {
-                    Rectangle r = ghostRectangles[i][j];
+                    Rectangle r = ghostRectangles[i][j]; // Use the dedicated ghost rectangle
                     int colorIndex = brick.getBrickData()[i][j];
 
                     r.setTranslateY(0);
@@ -257,16 +247,16 @@ public class GuiController implements Initializable {
 
                     if (colorIndex != 0) {
                         r.setTranslateY(yTranslateDistance);
-                        r.setStroke(Color.DARKGRAY);
-                        r.setStrokeWidth(1.0);
-                        r.setFill(Color.LIGHTGRAY);
+                        r.setStroke(getGhostColor(colorIndex));
+                        r.setStrokeWidth(2.0);
+                        r.setFill(Color.TRANSPARENT);
                     }
                 }
             }
 
             for (int i = 0; i < brick.getBrickData().length; i++) {
                 for (int j = 0; j < brick.getBrickData()[i].length; j++) {
-                    Rectangle r = rectangles[i][j];
+                    Rectangle r = rectangles[i][j]; // Use the dedicated falling piece rectangle
                     r.setStroke(null);
                     r.setStrokeWidth(0);
                     setRectangleData(brick.getBrickData()[i][j], r);
@@ -360,27 +350,6 @@ public class GuiController implements Initializable {
         else {
             timeLine.play();
             isPause.setValue(Boolean.FALSE);
-        }
-    }
-
-    public void returnToMenu(ActionEvent actionEvent) {
-        try {
-            // Stop the current game loop
-            timeLine.stop();
-
-            Stage primaryStage = (Stage) gamePanel.getScene().getWindow();
-
-            URL location = getClass().getClassLoader().getResource("menuLayout.fxml");
-            FXMLLoader fxmlLoader = new FXMLLoader(location);
-            Parent root = fxmlLoader.load();
-
-            primaryStage.setScene(new Scene(root, 475, 500));
-            primaryStage.setTitle("TetrisJFX - Menu");
-
-            root.requestFocus();
-
-        } catch (Exception e) {
-            System.err.println("Error returning to menu: " + e.getMessage());
         }
     }
 }
