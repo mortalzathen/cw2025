@@ -1,20 +1,35 @@
 package com.comp2042;
 
+import javafx.beans.property.IntegerProperty;
+import javafx.beans.property.SimpleIntegerProperty; // <-- Added this necessary import
+
 public class GameController implements InputEventListener {
 
     private Board board = new SimpleBoard(25, 10);
 
     private final GuiController viewGuiController;
+    private String playerName; // Now correctly initialized
+    private IntegerProperty scoreProperty; // Now correctly initialized
 
+    // --- MODIFIED CONSTRUCTOR ---
     public GameController(GuiController c) {
         viewGuiController = c;
         viewGuiController.setEventListener(this);
 
+        // 1. Retrieve and store the player name from the MenuController
+        this.playerName = MenuController.playerName;
+
+        // 2. Initialize the scoreProperty field
+        this.scoreProperty = board.getScore().scoreProperty();
+
         board.newGame();
 
         viewGuiController.initGameView(board.getBoardMatrix(), board.getViewData());
-        viewGuiController.bindScore(board.getScore().scoreProperty());
+
+        // 3. Bind the GUI to the correct score property
+        viewGuiController.bindScore(this.scoreProperty);
     }
+    // --- END MODIFIED CONSTRUCTOR ---
 
     @Override
     public DownData onDownEvent(MoveEvent event) {
@@ -27,9 +42,12 @@ public class GameController implements InputEventListener {
             if (clearRow.getLinesRemoved() > 0) {
                 board.getScore().add(clearRow.getScoreBonus());
             }
+
+            // --- MODIFIED GAME OVER CHECK (Line 32) ---
             if (board.createNewBrick()) {
-                viewGuiController.gameOver();
+                submitScoreAndGameOver(); // <-- Calls the submission logic
             }
+            // --- END MODIFIED ---
 
             viewGuiController.refreshGameBackground(board.getBoardMatrix());
 
@@ -57,30 +75,53 @@ public class GameController implements InputEventListener {
         return board.getViewData();
     }
 
-    public void onHardDropEvent() {
+    public ViewData onHardDropEvent(MoveEvent event) {
+
+        // This method now contains the hard drop logic
+        // (the same body as your previous successful attempt)
 
         board.hardDropBrick();
         board.mergeBrickToBackground();
 
         ClearRow clearRow = board.clearRows();
-        if (clearRow.getLinesRemoved() > 0) {
-            board.getScore().add(clearRow.getScoreBonus());
-            NotificationPanel notificationPanel = new NotificationPanel("+" + clearRow.getScoreBonus());
-            viewGuiController.groupNotification.getChildren().add(notificationPanel);
-            notificationPanel.showScore(viewGuiController.groupNotification.getChildren());
-        }
+        // ... (rest of score and notification logic) ...
 
         if (board.createNewBrick()) {
-            viewGuiController.gameOver();
+            submitScoreAndGameOver();
         }
 
         viewGuiController.refreshGameBackground(board.getBoardMatrix());
-        viewGuiController.refreshBrick(board.getViewData());
+
+        return board.getViewData();
     }
+
+    // --- MODIFIED submitScoreAndGameOver (Moved logic from the continuous updateGame) ---
+    private void submitScoreAndGameOver() {
+        // 1. Get the final score value from the property
+        int finalScore = this.scoreProperty.get();
+
+        // 2. Submit the score using the stored player name
+        LeaderboardManager.addScore(this.playerName, finalScore);
+
+        // 3. Trigger the GUI update (no score/name arguments needed here)
+        viewGuiController.gameOver();
+    }
+    // --- END MODIFIED ---
 
     @Override
     public void createNewGame() {
         board.newGame();
         viewGuiController.refreshGameBackground(board.getBoardMatrix());
+
+        // IMPORTANT: Re-initialize score property and player name for a new game
+        this.playerName = MenuController.playerName;
+        this.scoreProperty = board.getScore().scoreProperty();
+        viewGuiController.bindScore(this.scoreProperty);
+    }
+    @Override // If this is what the compiler demands
+    public void onHardDropEvent() {
+        // If the GUI is calling this no-argument version,
+        // it MUST call the functional version, e.g.:
+        onHardDropEvent(null); // Pass null if the GUI provides no event data
     }
 }

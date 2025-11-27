@@ -8,9 +8,13 @@ import javafx.beans.property.SimpleBooleanProperty;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.Group;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.Label;
+import javafx.scene.control.MenuButton;
 import javafx.scene.effect.Reflection;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
@@ -19,6 +23,7 @@ import javafx.scene.paint.Color;
 import javafx.scene.paint.Paint;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
+import javafx.stage.Stage;
 import javafx.util.Duration;
 
 import java.net.URL;
@@ -28,6 +33,7 @@ public class GuiController implements Initializable {
 
     private static final int BRICK_SIZE = 20;
     private static final int PREVIEW_BRICK_SIZE = 14;
+    private static final int HIDDEN_ROWS = 2;
 
     @FXML
     private GridPane gamePanel;
@@ -54,6 +60,20 @@ public class GuiController implements Initializable {
     @FXML
     private GridPane ghostPanel;
 
+    @FXML
+    private javafx.scene.control.Button shadowButton;
+
+    @FXML
+    private javafx.scene.control.Button restartButton;
+
+    @FXML
+    private javafx.scene.control.Button pauseButton;
+
+    @FXML
+    private javafx.scene.control.Button MenuButton;
+
+    private boolean isShadowEnabled = true;
+
     private Rectangle[][] ghostRectangles;
     private Rectangle[][] displayMatrix;
 
@@ -65,13 +85,18 @@ public class GuiController implements Initializable {
 
     private final BooleanProperty isPause = new SimpleBooleanProperty();
 
-    private final BooleanProperty isGameOver = new SimpleBooleanProperty();
+    public final BooleanProperty isGameOver = new SimpleBooleanProperty();
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         Font.loadFont(getClass().getClassLoader().getResource("digital.ttf").toExternalForm(), 38);
         gamePanel.setFocusTraversable(true);
         gamePanel.requestFocus();
+
+        if (shadowButton != null) {
+            shadowButton.setText("Shadow: " + (isShadowEnabled ? "ON" : "OFF"));
+        }
+
         gamePanel.setOnKeyPressed(new EventHandler<KeyEvent>() {
             @Override
             public void handle(KeyEvent keyEvent) {
@@ -93,7 +118,11 @@ public class GuiController implements Initializable {
                         keyEvent.consume();
                     }
                     if (keyEvent.getCode() == KeyCode.SPACE) {
-                        eventListener.onHardDropEvent();
+                       eventListener.onHardDropEvent();
+                        keyEvent.consume();
+                    }
+                    if (keyEvent.getCode() == KeyCode.H) {
+                        toggleShadow(null);
                         keyEvent.consume();
                     }
                 }
@@ -105,6 +134,11 @@ public class GuiController implements Initializable {
                         pauseGame(null);
                     } else {
                         pauseGame(null);
+                    }
+                }
+                if (keyEvent.getCode() == KeyCode.ENTER){
+                    if(isGameOver.get() == Boolean.TRUE){
+                        new MenuController();
                     }
                 }
             }
@@ -119,12 +153,12 @@ public class GuiController implements Initializable {
 
     public void initGameView(int[][] boardMatrix, ViewData brick) {
         displayMatrix = new Rectangle[boardMatrix.length][boardMatrix[0].length];
-        for (int i = 2; i < boardMatrix.length; i++) {
+        for (int i = HIDDEN_ROWS; i < boardMatrix.length; i++) {
             for (int j = 0; j < boardMatrix[i].length; j++) {
                 Rectangle rectangle = new Rectangle(BRICK_SIZE, BRICK_SIZE);
                 rectangle.setFill(Color.TRANSPARENT);
                 displayMatrix[i][j] = rectangle;
-                gamePanel.add(rectangle, j, i - 2);
+                gamePanel.add(rectangle, j, i - HIDDEN_ROWS);
             }
         }
 
@@ -140,22 +174,27 @@ public class GuiController implements Initializable {
         }
 
         ghostRectangles = new Rectangle[4][4];
-        for (int i = 0; i < 4; i++) {
-            for (int j = 0; j < 4; j++) {
-                Rectangle r = new Rectangle(BRICK_SIZE, BRICK_SIZE);
-                r.setFill(Color.TRANSPARENT);
-                r.setArcHeight(9);
-                r.setArcWidth(9);
-                ghostRectangles[i][j] = r;
-                ghostPanel.add(r, j, i);
+        if (ghostPanel != null) {
+            for (int i = 0; i < 4; i++) {
+                for (int j = 0; j < 4; j++) {
+                    Rectangle r = new Rectangle(BRICK_SIZE, BRICK_SIZE);
+                    r.setFill(Color.TRANSPARENT);
+                    r.setArcHeight(9);
+                    r.setArcWidth(9);
+                    ghostRectangles[i][j] = r;
+                    ghostPanel.add(r, j, i);
+                }
             }
+            ghostPanel.setVisible(isShadowEnabled);
         }
 
         brickPanel.setLayoutX(gamePanel.getLayoutX() + brick.getxPosition() * brickPanel.getVgap() + brick.getxPosition() * BRICK_SIZE);
         brickPanel.setLayoutY(-42 + gamePanel.getLayoutY() + brick.getyPosition() * brickPanel.getHgap() + brick.getyPosition() * BRICK_SIZE);
 
-        ghostPanel.setLayoutX(brickPanel.getLayoutX());
-        ghostPanel.setLayoutY(brickPanel.getLayoutY());
+        if (ghostPanel != null) {
+            ghostPanel.setLayoutX(brickPanel.getLayoutX());
+            ghostPanel.setLayoutY(brickPanel.getLayoutY());
+        }
 
         updatePreviews(brick);
 
@@ -201,25 +240,21 @@ public class GuiController implements Initializable {
         return returnPaint;
     }
 
+    // --- MODIFIED: getGhostColor (Now returns translucent grey regardless of piece type) ---
     private Paint getGhostColor(int i) {
-        return Color.WHITE.deriveColor(0, 1, 1, 0.4);
+        // If the piece is empty, return transparent
+        if (i == 0) {
+            return Color.TRANSPARENT;
+        }
+
+        // Return a semi-transparent grey (e.g., 40% opacity)
+        return Color.GRAY.deriveColor(0, 1, 1, 0.4);
     }
+    // --- END MODIFIED ---
 
 
     public void refreshBrick(ViewData brick) {
         if (isPause.getValue() == Boolean.FALSE) {
-
-            int[] bottomIndices = new int[4];
-            for (int k = 0; k < 4; k++) bottomIndices[k] = -1;
-
-            for (int j = 0; j < 4; j++) {
-                for (int i = 3; i >= 0; i--) {
-                    if (brick.getBrickData()[i][j] != 0) {
-                        bottomIndices[j] = i;
-                        break;
-                    }
-                }
-            }
 
             int ghostY = brick.getGhostYPosition();
             int deltaY = ghostY - brick.getyPosition();
@@ -227,36 +262,45 @@ public class GuiController implements Initializable {
             double yTranslateDistance = deltaY * (BRICK_SIZE + vgap);
 
             double calculatedX = gamePanel.getLayoutX() + brick.getxPosition() * brickPanel.getVgap() + brick.getxPosition() * BRICK_SIZE;
-            double calculatedY = -44 + gamePanel.getLayoutY() + brick.getyPosition() * brickPanel.getHgap() + brick.getyPosition() * BRICK_SIZE;
+            double calculatedY = -40 + gamePanel.getLayoutY() + brick.getyPosition() * brickPanel.getHgap() + brick.getyPosition() * BRICK_SIZE;
 
             brickPanel.setLayoutX(calculatedX);
             brickPanel.setLayoutY(calculatedY);
 
-            ghostPanel.setLayoutX(calculatedX);
-            ghostPanel.setLayoutY(calculatedY);
+            if (ghostPanel != null) {
+                ghostPanel.setLayoutX(calculatedX);
+                ghostPanel.setLayoutY(calculatedY);
+            }
 
-            for (int i = 0; i < 4; i++) {
-                for (int j = 0; j < 4; j++) {
-                    Rectangle r = ghostRectangles[i][j]; // Use the dedicated ghost rectangle
-                    int colorIndex = brick.getBrickData()[i][j];
+            if (isShadowEnabled && ghostPanel != null) {
+                for (int i = 0; i < 4; i++) {
+                    for (int j = 0; j < 4; j++) {
+                        Rectangle r = ghostRectangles[i][j];
+                        int colorIndex = brick.getBrickData()[i][j];
 
-                    r.setTranslateY(0);
-                    r.setStroke(null);
-                    r.setStrokeWidth(0);
-                    r.setFill(Color.TRANSPARENT);
+                        r.setTranslateY(0);
 
-                    if (colorIndex != 0) {
-                        r.setTranslateY(yTranslateDistance);
-                        r.setStroke(getGhostColor(colorIndex));
-                        r.setStrokeWidth(2.0);
-                        r.setFill(Color.TRANSPARENT);
+                        if (colorIndex != 0) {
+                            r.setTranslateY(yTranslateDistance);
+                            // Set solid translucent grey fill
+                            r.setFill(getGhostColor(colorIndex));
+
+                            r.setStroke(null);
+                            r.setStrokeWidth(0);
+                        } else {
+                            r.setFill(Color.TRANSPARENT);
+                        }
                     }
                 }
+                ghostPanel.setVisible(true);
+            } else if (ghostPanel != null) {
+                ghostPanel.setVisible(false);
             }
+            // --- END MODIFIED ---
 
             for (int i = 0; i < brick.getBrickData().length; i++) {
                 for (int j = 0; j < brick.getBrickData()[i].length; j++) {
-                    Rectangle r = rectangles[i][j]; // Use the dedicated falling piece rectangle
+                    Rectangle r = rectangles[i][j];
                     r.setStroke(null);
                     r.setStrokeWidth(0);
                     setRectangleData(brick.getBrickData()[i][j], r);
@@ -290,7 +334,7 @@ public class GuiController implements Initializable {
     }
 
     public void refreshGameBackground(int[][] board) {
-        for (int i = 2; i < board.length; i++) {
+        for (int i = HIDDEN_ROWS; i < board.length; i++) {
             for (int j = 0; j < board[i].length; j++) {
                 setRectangleData(board[i][j], displayMatrix[i][j]);
             }
@@ -316,6 +360,12 @@ public class GuiController implements Initializable {
         }
     }
 
+    private void hardDrop(ViewData viewData) {
+        if (isPause.getValue() == Boolean.FALSE) {
+            refreshBrick(viewData);
+        }
+    }
+
     public void setEventListener(InputEventListener eventListener) {
         this.eventListener = eventListener;
     }
@@ -334,6 +384,7 @@ public class GuiController implements Initializable {
 
     public void newGame(ActionEvent actionEvent) {
         timeLine.stop();
+        restartButton.setText("Restart");
         gameOverPanel.setVisible(false);
         eventListener.createNewGame();
         gamePanel.requestFocus();
@@ -345,11 +396,38 @@ public class GuiController implements Initializable {
     public void pauseGame(ActionEvent actionEvent) {
         if(isPause.getValue() == Boolean.FALSE) {
             timeLine.stop();
+            pauseButton.setText("Pause");
             isPause.setValue(Boolean.TRUE);
         }
         else {
             timeLine.play();
+            pauseButton.setText("Resume");
             isPause.setValue(Boolean.FALSE);
         }
+    }
+
+    public void toggleShadow(ActionEvent evt) {
+        isShadowEnabled = !isShadowEnabled;
+        if (shadowButton != null) {
+            shadowButton.setText("Shadow: " + (isShadowEnabled ? "ON" : "OFF"));
+        }
+        if (ghostPanel != null) {
+            ghostPanel.setVisible(isShadowEnabled);
+        }
+        gamePanel.requestFocus();
+    }
+
+    public void gotoMenu(ActionEvent evt) throws Exception {
+        Stage primaryStage = (Stage) ((Parent) evt.getSource()).getScene().getWindow();
+        timeLine.stop();
+        MenuButton.setText("Menu");
+        URL location = getClass().getClassLoader().getResource("menuLayout.fxml");
+        ResourceBundle resources = null;
+        FXMLLoader fxmlLoader = new FXMLLoader(location, resources);
+        Parent root = fxmlLoader.load();
+        primaryStage.setTitle("TetrisJFX - Menu");
+        Scene scene = new Scene(root, 475, 500);
+        primaryStage.setScene(scene);
+        primaryStage.show();
     }
 }
