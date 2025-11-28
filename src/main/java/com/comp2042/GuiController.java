@@ -240,17 +240,13 @@ public class GuiController implements Initializable {
         return returnPaint;
     }
 
-    // --- MODIFIED: getGhostColor (Now returns translucent grey regardless of piece type) ---
     private Paint getGhostColor(int i) {
-        // If the piece is empty, return transparent
         if (i == 0) {
             return Color.TRANSPARENT;
         }
 
-        // Return a semi-transparent grey (e.g., 40% opacity)
         return Color.GRAY.deriveColor(0, 1, 1, 0.4);
     }
-    // --- END MODIFIED ---
 
 
     public void refreshBrick(ViewData brick) {
@@ -282,7 +278,6 @@ public class GuiController implements Initializable {
 
                         if (colorIndex != 0) {
                             r.setTranslateY(yTranslateDistance);
-                            // Set solid translucent grey fill
                             r.setFill(getGhostColor(colorIndex));
 
                             r.setStroke(null);
@@ -296,7 +291,6 @@ public class GuiController implements Initializable {
             } else if (ghostPanel != null) {
                 ghostPanel.setVisible(false);
             }
-            // --- END MODIFIED ---
 
             for (int i = 0; i < brick.getBrickData().length; i++) {
                 for (int j = 0; j < brick.getBrickData()[i].length; j++) {

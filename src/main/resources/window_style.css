@@ -5,9 +5,8 @@
 
 .gameBoard {
     -fx-border-width: 10px;
-    -fx-border-color: #3f475a; /* Dark Metal Grey */
-    -fx-border-radius: 5px; /* Squared off, industrial look */
-    /* Subtle internal shadow to push the game panel deeper */
+    -fx-border-color: #3f475a;
+    -fx-border-radius: 5px;
     -fx-effect: innershadow(gaussian, #000000, 15, 0.8, 0, 0);
 }
 
@@ -109,43 +108,30 @@
     -fx-text-alignment: left;
 }
 
-/* --- LEADERBOARD SPECIFIC STYLES --- */
-
-/* Style for the ListView background (fx:id="scoreListView") */
 .list-view {
-    /* Use the gameBoard border style for the list view container */
     -fx-border-width: 2px;
-    -fx-border-color: #3f475a; /* Dark Metal Grey */
+    -fx-border-color: #3f475a;
     -fx-border-radius: 4px;
-
-    /* Pure black transparent background */
     -fx-background-color: rgba(0, 0, 0, 0.7);
-
-    /* Remove default JavaFX border effects */
     -fx-box-border: transparent;
     -fx-padding: 0;
 }
 
-/* Style for the individual items (score entries) inside the ListView */
 .list-cell {
-    -fx-background-color: transparent; /* Ensure cells don't have white background */
-    -fx-text-fill: #99aab5; /* Default text: light industrial grey */
+    -fx-background-color: transparent;
+    -fx-text-fill: #99aab5;
     -fx-font-family: "Let's go Digital";
     -fx-font-size: 16px;
-    -fx-padding: 8px 15px; /* Spacing for score readability */
-
-    /* Subtle horizontal divider line */
+    -fx-padding: 8px 15px;
     -fx-border-color: #1a202c;
-    -fx-border-width: 0 0 1px 0; /* Only bottom border */
+    -fx-border-width: 0 0 1px 0;
 }
 
-/* Style for the list items when selected */
 .list-cell:selected {
-    -fx-background-color: #1a202c; /* Darker background for selection */
-    -fx-text-fill: #00bcd4; /* Electric Blue highlight */
+    -fx-background-color: #1a202c;
+    -fx-text-fill: #00bcd4;
 }
 
-/* Style for the scrollbar (making it dark and subtle) */
 .list-view .scroll-bar:vertical .increment-button,
 .list-view .scroll-bar:vertical .decrement-button {
     -fx-background-color: transparent;
@@ -153,6 +139,6 @@
 }
 
 .list-view .scroll-bar:vertical .thumb {
-    -fx-background-color: #3f475a; /* Dark metal color for the thumb */
+    -fx-background-color: #3f475a;
     -fx-background-radius: 5em;
 }
