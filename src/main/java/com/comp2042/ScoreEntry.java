@@ -1,6 +1,10 @@
 package com.comp2042;
 
-public class ScoreEntry implements Comparable<ScoreEntry> {
+import java.io.Serializable;
+
+public class ScoreEntry implements Comparable<ScoreEntry>, Serializable {
+    private static final long serialVersionUID = 1L;
+
     private final String playerName;
     private final int score;
 

@@ -23,7 +23,6 @@ public class LeaderboardController implements Initializable {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        // Load scores immediately when the scene is initialized
         loadScores();
     }
 
@@ -32,12 +31,11 @@ public class LeaderboardController implements Initializable {
 
         List<String> displayScores = scores.stream()
                 .map(entry -> String.format("#%d: %s - %d",
-                        scores.indexOf(entry) + 1, // Rank
+                        scores.indexOf(entry) + 1,
                         entry.getPlayerName(),
                         entry.getScore()))
                 .collect(Collectors.toList());
 
-        // 3. Update the ListView
         scoreListView.setItems(FXCollections.observableArrayList(displayScores));
 
         if (displayScores.isEmpty()) {
@@ -48,7 +46,6 @@ public class LeaderboardController implements Initializable {
 
     public void backToMenu(ActionEvent event) {
         try {
-            // Determine the current window (Stage)
             Stage stage = (Stage) ((Parent) event.getSource()).getScene().getWindow();
 
             URL location = getClass().getClassLoader().getResource("menuLayout.fxml");
