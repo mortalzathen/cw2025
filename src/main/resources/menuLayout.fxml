@@ -9,7 +9,7 @@
 
 <VBox alignment="CENTER" spacing="20" styleClass="rootStyle"
       xmlns:fx="http://javafx.com/fxml/1"
-      fx:controller="com.comp2042.MenuController">
+      fx:controller="com.comp2042.ui.MenuController">
 
     <padding>
         <Insets top="50" right="50" bottom="50" left="50"/>
