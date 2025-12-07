@@ -143,10 +143,9 @@ public class GameController implements InputEventListener {
      */
     private void submitScoreAndGameOver() {
 
-        int finalScore = this.scoreProperty.get();
-
+        int finalScore = board.getScore().scoreProperty().get(); // Assuming this is how you get the score
+        System.out.println("Attempting to save score: " + finalScore + " for " + this.playerName);
         LeaderboardManager.addScore(this.playerName, finalScore);
-
         viewGuiController.gameOver();
     }
 
