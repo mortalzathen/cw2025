@@ -142,7 +142,6 @@ public class GameController implements InputEventListener {
      * Submits the final score and player name to the LeaderboardManager and triggers the GUI game over screen.
      */
     private void submitScoreAndGameOver() {
-
         int finalScore = board.getScore().scoreProperty().get(); // Assuming this is how you get the score
         System.out.println("Attempting to save score: " + finalScore + " for " + this.playerName);
         LeaderboardManager.addScore(this.playerName, finalScore);

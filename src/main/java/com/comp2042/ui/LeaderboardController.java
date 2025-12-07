@@ -16,6 +16,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.List;
 import java.util.ResourceBundle;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 public class LeaderboardController implements Initializable {
@@ -31,12 +32,16 @@ public class LeaderboardController implements Initializable {
     public void loadScores() {
         List<ScoreEntry> scores = LeaderboardManager.getTopScores();
 
+        // --- FIX IS HERE: Use AtomicInteger to track rank reliably ---
+        AtomicInteger rank = new AtomicInteger(1);
+
         List<String> displayScores = scores.stream()
                 .map(entry -> String.format("#%d: %s - %d",
-                        scores.indexOf(entry) + 1,
+                        rank.getAndIncrement(), // <-- Uses the guaranteed counter instead of indexOf()
                         entry.getPlayerName(),
                         entry.getScore()))
                 .collect(Collectors.toList());
+        // -----------------------------------------------------------
 
         scoreListView.setItems(FXCollections.observableArrayList(displayScores));
 
